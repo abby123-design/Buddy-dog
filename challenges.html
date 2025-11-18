@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Challenges & Notes</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #fff3f9;
+  padding: 20px;
+  text-align: center;
+}
+.box {
+  background: white;
+  width: 300px;
+  margin: 10px auto;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 0 8px #ccc;
+}
+textarea {
+  width: 100%;
+  height: 100px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  resize: none;
+}
+button {
+  background: #ff5e9d;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  margin-top: 6px;
+  cursor: pointer;
+}
+a {
+  display: block;
+  margin-top: 10px;
+  color: #ff5e9d;
+  text-decoration: none;
+}
+</style>
+</head>
+<body>
+
+<h1>Challenges & Notes</h1>
+
+<div class="box">
+  <h3>Daily Micro-Challenge</h3>
+  <p id="challengeText">Click generate</p>
+  <button onclick="newChallenge()">Generate</button>
+</div>
+
+<div class="box">
+  <h3>Quick Notes</h3>
+  <textarea id="noteBox" placeholder="Write something..."></textarea>
+  <p><strong>Preview:</strong></p>
+  <div id="preview" style="min-height:30px;"></div>
+  <button onclick="saveNote()">Save Note</button>
+  <a href="index.html">← Back</a>
+</div>
+
+<script>
+// List of challenges
+var challenges = [
+  "Drink a full glass of water 💧",
+  "Stretch for 1 minute 🧘‍♀️",
+  "Clean a small area of your desk 🧹",
+  "Write one thing you're grateful for ✍️",
+  "Walk for 2-3 minutes 🚶‍♀️"
+];
+
+// Function to show a new challenge
+function newChallenge() {
+  var randomNumber = Math.floor(Math.random() * challenges.length);
+  document.getElementById("challengeText").innerHTML = challenges[randomNumber];
+}
+
+// Notes
+var noteBox = document.getElementById("noteBox");
+var preview = document.getElementById("preview");
+
+// Load saved notes from localStorage
+var notes = localStorage.getItem("buddy_notes");
+if (notes) {
+  notes = JSON.parse(notes);
+  if (notes.length > 0) {
+    noteBox.value = notes[0].text; // show last saved note
+    preview.innerHTML = notes[0].text;
+  }
+} else {
+  notes = [];
+}
+
+// Update preview as user types
+noteBox.onkeyup = function() {
+  preview.innerHTML = noteBox.value;
+}
+
+// Save note
+function saveNote() {
+  var text = noteBox.value;
+  if (text == "") {
+    alert("Write something first!");
+    return;
+  }
+  
+  var noteObject = { text: text, time: new Date().toLocaleString() };
+  notes.unshift(noteObject);
+  localStorage.setItem("buddy_notes", JSON.stringify(notes));
+  
+  alert("Saved!");
+  noteBox.value = "";
+  preview.innerHTML = "";
+}
+</script>
+
+</body>
+</html>
