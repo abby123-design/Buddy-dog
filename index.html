@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Buddy Dog Dashboard</title>
+
+<style>
+  body{
+    background:#f2f6fb;
+    font-family: "Trebuchet MS", sans-serif;
+    margin:0;
+    padding:20px;
+  }
+
+  h1{
+    text-align:center;
+    color:#ff6794;
+    margin-bottom:20px;
+  }
+
+  .box{
+    width:350px;
+    background:white;
+    padding:15px;
+    border-radius:12px;
+    box-shadow:0 3px 10px rgba(0,0,0,.12);
+    margin:0 auto 18px auto;
+  }
+
+  input{
+    padding:7px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    width:190px;
+  }
+
+  button{
+    background:#ff5d8c;
+    color:white;
+    border:none;
+    padding:8px 12px;
+    border-radius:8px;
+    cursor:pointer;
+    margin-left:4px;
+  }
+
+  button:hover{
+    opacity:.9;
+  }
+
+  ul{padding:0; list-style:none;}
+  li{
+    background:#fff3fa;
+    padding:8px;
+    border-radius:8px;
+    margin-top:6px;
+    cursor:pointer;
+  }
+
+  li.done{
+    text-decoration:line-through;
+    opacity:.65;
+  }
+
+  #dogFace{
+    font-size:80px;
+    transition:all .25s;
+    display:block;
+    text-align:center;
+    margin-top:5px;
+  }
+
+  #dogFace.bork{
+    transform:translateY(-10px);
+  }
+
+  progress{
+    width:100%;
+    height:16px;
+    margin-top:8px;
+  }
+
+  a{
+    color:#ff5d8c;
+    text-decoration:none;
+    margin-left:10px;
+    font-size:14px;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>Buddy Dog Productivity Hub 🐾</h1>
+
+<!-- TASK BOX -->
+<div class="box">
+  <h2 style="margin-top:0;">Today's Tasks</h2>
+  <div>
+    <input id="taskInput" placeholder="Add task">
+    <button onclick="addTask()">Add</button>
+  </div>
+  <ul id="taskList"></ul>
+
+  <progress id="prog" max="100" value="0"></progress>
+
+  <div id="doneMsg" style="display:none; margin-top:10px; font-size:14px; background:#ffe7f1; padding:8px; border-radius:10px;">
+    All done!! Buddy is doing a happy dance 🎉
+  </div>
+</div>
+
+<!-- DOG BOX -->
+<div class="box">
+  <h2 style="margin-top:0;">Buddy Dog</h2>
+  <div id="dogFace">🐶</div>
+  <p id="dogTalk" style="text-align:center; font-size:13px; color:#666;">Buddy is chilling.</p>
+
+  <div style="text-align:center; margin-top:10px;">
+    <button onclick="petBuddy()">Pet Buddy</button>
+    <a href="challenges.html">More stuff →</a>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="box">
+  <h2 style="margin-top:0;">Task History</h2>
+  <ul id="historyList"></ul>
+</div>
+
+<script>
+// -------------------- VARIABLES --------------------
+let todayTasks = [];   // tasks for THIS session
+let allHistory = JSON.parse(localStorage.getItem("buddyHistory") || "[]");
+
+// elements
+const taskList = document.getElementById("taskList");
+const historyList = document.getElementById("historyList");
+const prog = document.getElementById("prog");
+const dogFace = document.getElementById("dogFace");
+const dogTalk = document.getElementById("dogTalk");
+const doneMsg = document.getElementById("doneMsg");
+
+// -------------------- RENDER TASKS --------------------
+function paintTasks(){
+  taskList.innerHTML = "";
+  todayTasks.forEach((t, i)=>{
+    let li = document.createElement("li");
+    li.textContent = t.text;
+    if(t.done) li.classList.add("done");
+
+    li.onclick = ()=> toggle(i);
+    taskList.appendChild(li);
+  });
+
+  paintProgress();
+  paintHistory();
+}
+
+function addTask(){
+  let v = document.getElementById("taskInput").value.trim();
+  if(!v) return;
+
+  todayTasks.push({text:v, done:false});
+  document.getElementById("taskInput").value = "";
+  paintTasks();
+}
+
+function toggle(i){
+  todayTasks[i].done = !todayTasks[i].done;
+
+  if(todayTasks[i].done){
+    allHistory.unshift({
+      text: todayTasks[i].text,
+      time: new Date().toLocaleString()
+    });
+
+    localStorage.setItem("buddyHistory", JSON.stringify(allHistory));
+  }
+
+  dogFace.classList.add("bork");
+  setTimeout(()=>dogFace.classList.remove("bork"), 250);
+
+  paintTasks();
+}
+
+function paintProgress(){
+  if(todayTasks.length === 0){
+    prog.value = 0;
+    dogFace.textContent = "🐶";
+    dogTalk.textContent = "Ready when you are.";
+    doneMsg.style.display = "none";
+    return;
+  }
+
+  let doneNum = todayTasks.filter(t=>t.done).length;
+  let pct = Math.round((doneNum/todayTasks.length) * 100);
+  prog.value = pct;
+
+  if(pct === 100){
+    dogFace.textContent = "🎉🐶";
+    dogTalk.textContent = "Buddy is soooo proud!!";
+    doneMsg.style.display = "block";
+  } else if(pct >= 60){
+    dogFace.textContent = "😄";
+    dogTalk.textContent = "Nice progress!";
+    doneMsg.style.display = "none";
+  } else if(pct >= 30){
+    dogFace.textContent = "🙂";
+    dogTalk.textContent = "You’re warming up!";
+    doneMsg.style.display = "none";
+  } else {
+    dogFace.textContent = "🐶";
+    dogTalk.textContent = "Let's start strong!";
+    doneMsg.style.display = "none";
+  }
+}
+
+function paintHistory(){
+  historyList.innerHTML = "";
+  allHistory.forEach(item=>{
+    let li = document.createElement("li");
+    li.textContent = item.text + " — " + item.time;
+    historyList.appendChild(li);
+  });
+}
+
+function petBuddy(){
+  dogFace.style.transform = "scale(1.15)";
+  setTimeout(()=>dogFace.style.transform="", 280);
+  dogTalk.textContent = "He liked that 🐾";
+}
+
+document.getElementById("taskInput").addEventListener("keydown", (e)=>{
+  if(e.key === "Enter") addTask();
+});
+
+paintTasks();
+</script>
+
+</body>
+</html>
