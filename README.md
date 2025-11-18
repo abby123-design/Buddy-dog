@@ -1,2 +1,2 @@
-# Buddy-dog
-This is my project
+# Buddy-Dog-Productivity-Hub
+This is my project for Robotics Web Dev.
